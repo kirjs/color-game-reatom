@@ -72,7 +72,7 @@ form {
   align-items: center;
   justify-content: center;
   font-family: monospace;
-  font-size: 4rem;
+  font-size: 3rem;
   filter: grayscale(1);
   background-color: #ddd;
   pointer-events: none;
