@@ -4,9 +4,11 @@ import {
   action,
   atom,
   onConnect,
+  onUpdate,
   random,
   sleep,
   take,
+  withInit,
 } from "@reatom/framework";
 import { colord, extend } from "colord";
 import mixPlugin from "colord/plugins/mix";
@@ -34,6 +36,14 @@ function reatomColors() {
   const attemptColorAtom = atom("#000", "attemptColorAtom");
   const deltaAtom = atom<null | number>(null, "deltaAtom");
   const speedAtom = atom(2, "speedAtom");
+
+  const maxScoreAtom = atom(
+    (ctx, state = 0) => Math.max(ctx.spy(speedAtom), state),
+    "maxScoreAtom"
+  ).pipe(withInit(() => Number(localStorage.getItem("maxScore")) || 2));
+  onUpdate(maxScoreAtom, (ctx, value) =>
+    localStorage.setItem("maxScore", value.toString())
+  );
 
   const attempt = action((ctx) => {
     if (ctx.get(deltaAtom) !== null) {
@@ -102,6 +112,7 @@ function reatomColors() {
     currentColorAtom: _currentColorAtom,
     deltaAtom,
     initialColorAtom,
+    maxScoreAtom,
     speedAtom,
     targetColorAtom,
   };
@@ -128,6 +139,7 @@ function App() {
   const [answerColor] = useAtom(model.answerColorAtom);
   const [attemptColor] = useAtom(model.attemptColorAtom);
   const [currentColor] = useAtom(model.currentColorAtom);
+  const [maxScore] = useAtom(model.maxScoreAtom);
   const [speed] = useAtom(model.speedAtom);
   const [delta] = useAtom(model.deltaAtom);
 
@@ -142,10 +154,11 @@ function App() {
         </div>
         <div className="square" style={{ background: currentColor }}>
           {delta === null ? (
-            <>
+            <div className="speed">
               <span>with</span>
-              <span className="speed">speed: {speed}</span>
-            </>
+              <span>speed: {speed}</span>
+              <span>max: {maxScore}</span>
+            </div>
           ) : (
             <>
               <span className="result" style={{ background: answerColor }}>
