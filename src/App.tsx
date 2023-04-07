@@ -1,6 +1,6 @@
 import "./App.css";
 import { useAction, useAtom } from "@reatom/npm-react";
-import { action, atom, onConnect, random, take } from "@reatom/framework";
+import { action, atom, onConnect, random } from "@reatom/framework";
 import { colord, extend } from "colord";
 import { useState } from "react";
 import mixPlugin from "colord/plugins/mix";
@@ -10,18 +10,16 @@ extend([labPlugin, mixPlugin]);
 function reatomColors() {
   console.log("hi");
 
-  const targetColorAtom = atom("#000", "targetAtom");
-  const initialColorAtom = atom("#000", "initialAtom");
-  const currentColorAtom = atom("#000", "_currentColorAtom");
+  const targetColorAtom = atom("#000", "targetColorAtom");
+  const initialColorAtom = atom("#000", "initialColorAtom");
+  const _currentColorAtom = atom("#000", "_currentColorAtom");
   const attemptColorAtom = atom("#000", "attemptColorAtom");
 
   const deltaAtom = atom(0, "deltaAtom");
 
-  
-
   const attempt = action((ctx) => {
     console.log("attempt");
-    const currentColor = attemptColorAtom(ctx, ctx.get(currentColorAtom));
+    const currentColor = attemptColorAtom(ctx, ctx.get(_currentColorAtom));
     const initialColor = ctx.get(initialColorAtom);
     const attemptColor = attemptColorAtom(
       ctx,
@@ -30,17 +28,17 @@ function reatomColors() {
     const targetColor = ctx.get(targetColorAtom);
 
     const delta = deltaAtom(ctx, colord(attemptColor).delta(targetColor));
-    if(delta < 0.2) {
-      alert('You are a genius ' + delta + '🥕')
+    if (delta < 0.2) {
+      alert(`You are a genius ${delta} 🥕`);
     } else {
-      alert('Try again ' + delta + '🥕')
+      alert(`Try again ${delta} 🥕`);
     }
 
     generateTargetColor(ctx);
-  }, 'attempt');
+  }, "attempt");
 
   const generateTargetColor = action((ctx) => {
-    console.log('GTC');
+    console.log("GTC");
     const initialHsl = {
       l: 50,
       s: 50,
@@ -59,15 +57,15 @@ function reatomColors() {
 
     initialColorAtom(ctx, colord(initialHsl).toRgbString());
     targetColorAtom(ctx, targetColor.toRgbString());
-  }, 'generateTargetColor');
+  }, "generateTargetColor");
 
-  const generateNewColorClick = action();
+  const generateNewColorClick = action("generateNewColorClick");
   onConnect(initialColorAtom, generateTargetColor);
-  onConnect(currentColorAtom, async (ctx) => {
+  onConnect(_currentColorAtom, async (ctx) => {
     while (ctx.isConnected()) {
       await new Promise(requestAnimationFrame);
 
-      currentColorAtom(ctx, (color) => {
+      _currentColorAtom(ctx, (color) => {
         const hsl = colord(color).toHsl();
         hsl.h += Math.random() * 1;
         hsl.l = 80;
@@ -83,7 +81,7 @@ function reatomColors() {
     targetAtom: targetColorAtom,
     attempt,
     initialAtom: initialColorAtom,
-    currentColorAtom,
+    currentColorAtom: _currentColorAtom,
     attemptColorAtom,
     generateNewColorClick,
     deltaAtom,
