@@ -1,5 +1,14 @@
+body {
+  margin: 0;
+}
+
 .app {
   position: relative;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 form {
@@ -13,13 +22,14 @@ form {
 .square {
   width: 30vmax;
   height: 30vmax;
-  border: 1px #ddd solid;
-  margin-bottom: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  transition: background-color 50ms;
+  border-radius: 5%;
+  pointer-events: none;
 }
 
 .square span {
@@ -29,12 +39,18 @@ form {
   opacity: 0.5;
 }
 
+.square span.speed {
+  position: absolute;
+  top: 70%;
+  font-size: 200%;
+}
+
 .attempt {
   position: absolute;
   height: 100%;
   width: 100%;
   transform: scale(1.5) rotate(45deg) translate(50%, 0);
-  border: 1px dashed rgba(0,0,0,0.5);
+  /* border: 1px dashed rgba(0, 0, 0, 0.5); */
 }
 
 .delta {
@@ -48,5 +64,7 @@ form {
   font-family: monospace;
   font-size: 20vmin;
   filter: grayscale(1);
-  opacity: 0.8;
+  opacity: 0.9;
+  background-color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
 }
