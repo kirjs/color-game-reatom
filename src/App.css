@@ -34,9 +34,9 @@ form {
 
 .square span {
   font-family: monospace;
-  font-size: 300%;
+  font-size: 200%;
   font-weight: bolder;
-  opacity: 0.5;
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .square span.speed {
@@ -45,12 +45,21 @@ form {
   font-size: 200%;
 }
 
+.result {
+  position: relative;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .attempt {
   position: absolute;
   height: 100%;
   width: 100%;
   transform: scale(1.5) rotate(45deg) translate(50%, 0);
-  /* border: 1px dashed rgba(0, 0, 0, 0.5); */
+  border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 .delta {

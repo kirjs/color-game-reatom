@@ -11,7 +11,8 @@ import {
 import { colord, extend } from "colord";
 import mixPlugin from "colord/plugins/mix";
 import labPlugin from "colord/plugins/lab";
-extend([labPlugin, mixPlugin]);
+import a11yPlugin from "colord/plugins/a11y";
+extend([labPlugin, mixPlugin, a11yPlugin]);
 
 function getHsl(h = random(0, 360)) {
   return {
@@ -22,12 +23,13 @@ function getHsl(h = random(0, 360)) {
 }
 
 function isWin(delta: number) {
-  return delta <= 0.1;
+  return delta <= 0.11;
 }
 
 function reatomColors() {
   const targetColorAtom = atom("#000", "targetColorAtom");
   const initialColorAtom = atom("#000", "initialColorAtom");
+  const answerColorAtom = atom("#000", "answerColorAtom");
   const _currentColorAtom = atom("#000", "_currentColorAtom");
   const attemptColorAtom = atom("#000", "attemptColorAtom");
   const deltaAtom = atom<null | number>(null, "deltaAtom");
@@ -59,12 +61,13 @@ function reatomColors() {
   const start = action((ctx) => {
     const initialHsl = getHsl();
 
-    const answerHsl = getHsl(initialHsl.h + random(120, 240));
+    const answerColor = colord(getHsl(initialHsl.h + random(120, 240)));
 
-    const targetColor = colord(initialHsl).mix(answerHsl);
+    const targetColor = colord(initialHsl).mix(answerColor);
 
-    initialColorAtom(ctx, colord(initialHsl).toRgbString());
     targetColorAtom(ctx, targetColor.toRgbString());
+    initialColorAtom(ctx, colord(initialHsl).toRgbString());
+    answerColorAtom(ctx, answerColor.toRgbString());
     attemptColorAtom(ctx, "transparent");
     deltaAtom(ctx, null);
   }, "start");
@@ -93,6 +96,7 @@ function reatomColors() {
   });
 
   return {
+    answerColorAtom,
     attempt,
     attemptColorAtom,
     currentColorAtom: _currentColorAtom,
@@ -119,11 +123,12 @@ function Delta() {
 }
 
 function App() {
+  const [targetColor] = useAtom(model.targetColorAtom);
+  const [initialColor] = useAtom(model.initialColorAtom);
+  const [answerColor] = useAtom(model.answerColorAtom);
   const [attemptColor] = useAtom(model.attemptColorAtom);
   const [currentColor] = useAtom(model.currentColorAtom);
-  const [initialColor] = useAtom(model.initialColorAtom);
   const [speed] = useAtom(model.speedAtom);
-  const [targetColor] = useAtom(model.targetColorAtom);
   const [delta] = useAtom(model.deltaAtom);
 
   const attemptAction = useAction(model.attempt);
@@ -135,12 +140,35 @@ function App() {
           <span>from</span>
         </div>
         <div className="square" style={{ background: currentColor }}>
-          <span>with</span>
-          <span className="speed">speed: {speed}</span>
+          {delta === null ? (
+            <>
+              <span>with</span>
+              <span className="speed">speed: {speed}</span>
+            </>
+          ) : (
+            <>
+              <span className="result" style={{ background: answerColor }}>
+                should
+              </span>
+              <span className="result" style={{ background: currentColor }}>
+                your
+              </span>
+            </>
+          )}
         </div>
         <div className="square" style={{ background: targetColor }}>
-          {delta === null && <span>to</span>}
-          <div className="attempt" style={{ background: attemptColor }} />
+          {delta === null ? (
+            <span>to</span>
+          ) : (
+            <>
+              <span className="result" style={{ background: targetColor }}>
+                be
+              </span>
+              <span className="result" style={{ background: attemptColor }}>
+                your
+              </span>
+            </>
+          )}
         </div>
       </form>
       <Delta />
