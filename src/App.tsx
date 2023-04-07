@@ -138,6 +138,7 @@ function App() {
       <form>
         <div className="square" style={{ background: initialColor }}>
           <span>from</span>
+          <Delta />
         </div>
         <div className="square" style={{ background: currentColor }}>
           {delta === null ? (
@@ -148,7 +149,7 @@ function App() {
           ) : (
             <>
               <span className="result" style={{ background: answerColor }}>
-                should
+                will
               </span>
               <span className="result" style={{ background: currentColor }}>
                 your
@@ -171,7 +172,6 @@ function App() {
           )}
         </div>
       </form>
-      <Delta />
     </section>
   );
 }
