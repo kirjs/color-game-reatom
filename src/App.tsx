@@ -2,24 +2,28 @@ import "./App.css";
 import { useAction, useAtom } from "@reatom/npm-react";
 import { action, atom, onConnect, random } from "@reatom/framework";
 import { colord, extend } from "colord";
-import { useState } from "react";
 import mixPlugin from "colord/plugins/mix";
 import labPlugin from "colord/plugins/lab";
 extend([labPlugin, mixPlugin]);
 
-function reatomColors() {
-  console.log("hi");
+function getHsl(h = random(0, 360)) {
+  return {
+    l: 80,
+    s: 80,
+    a: 80,
+    h,
+  };
+}
 
+function reatomColors() {
   const targetColorAtom = atom("#000", "targetColorAtom");
   const initialColorAtom = atom("#000", "initialColorAtom");
   const _currentColorAtom = atom("#000", "_currentColorAtom");
   const attemptColorAtom = atom("#000", "attemptColorAtom");
-
-  const deltaAtom = atom(0, "deltaAtom");
+  const deltaAtom = atom<null | number>(null, "deltaAtom");
 
   const attempt = action((ctx) => {
-    console.log("attempt");
-    const currentColor = attemptColorAtom(ctx, ctx.get(_currentColorAtom));
+    const currentColor = ctx.get(_currentColorAtom);
     const initialColor = ctx.get(initialColorAtom);
     const attemptColor = attemptColorAtom(
       ctx,
@@ -27,50 +31,29 @@ function reatomColors() {
     );
     const targetColor = ctx.get(targetColorAtom);
 
-    const delta = deltaAtom(ctx, colord(attemptColor).delta(targetColor));
-    if (delta < 0.2) {
-      alert(`You are a genius ${delta} 🥕`);
-    } else {
-      alert(`Try again ${delta} 🥕`);
-    }
-
-    generateTargetColor(ctx);
+    deltaAtom(ctx, colord(attemptColor).delta(targetColor));
   }, "attempt");
 
-  const generateTargetColor = action((ctx) => {
-    console.log("GTC");
-    const initialHsl = {
-      l: 50,
-      s: 50,
-      a: 50,
-      h: random(0, 360),
-    };
+  const start = action((ctx) => {
+    const initialHsl = getHsl();
 
-    const answerHsl = {
-      l: 50,
-      s: 50,
-      a: 50,
-      h: random(0, 360),
-    };
+    const answerHsl = getHsl(initialHsl.h + random(60, 300));
 
     const targetColor = colord(initialHsl).mix(answerHsl);
 
     initialColorAtom(ctx, colord(initialHsl).toRgbString());
     targetColorAtom(ctx, targetColor.toRgbString());
-  }, "generateTargetColor");
+    attemptColorAtom(ctx, "transparent");
+    deltaAtom(ctx, null);
+  }, "start");
 
-  const generateNewColorClick = action("generateNewColorClick");
-  onConnect(initialColorAtom, generateTargetColor);
+  onConnect(initialColorAtom, start);
   onConnect(_currentColorAtom, async (ctx) => {
     while (ctx.isConnected()) {
       await new Promise(requestAnimationFrame);
 
       _currentColorAtom(ctx, (color) => {
-        const hsl = colord(color).toHsl();
-        hsl.h += Math.random() * 1;
-        hsl.l = 80;
-        hsl.s = 80;
-        hsl.a = 50;
+        const hsl = getHsl(colord(color).toHsl().h + 1);
 
         return colord(hsl).toRgbString();
       });
@@ -78,56 +61,69 @@ function reatomColors() {
   });
 
   return {
-    targetAtom: targetColorAtom,
     attempt,
-    initialAtom: initialColorAtom,
-    currentColorAtom: _currentColorAtom,
     attemptColorAtom,
-    generateNewColorClick,
+    currentColorAtom: _currentColorAtom,
     deltaAtom,
+    initialColorAtom,
+    start,
+    targetColorAtom,
   };
 }
 
+const {
+  attempt,
+  attemptColorAtom,
+  currentColorAtom,
+  deltaAtom,
+  initialColorAtom,
+  start,
+  targetColorAtom,
+} = reatomColors();
+
+function Delta() {
+  const [delta] = useAtom(deltaAtom);
+  const handleStart = useAction(start);
+  if (delta === null) return null;
+
+  const percent = 100 - +delta.toFixed(2) * 100;
+
+  return (
+    <div className="delta" onClick={handleStart}>
+      {percent}% {percent > 80 ? "👍" : "👎"}
+    </div>
+  );
+}
+
 function App() {
-  const [
-    {
-      targetAtom,
-      attempt,
-      initialAtom,
-      generateNewColorClick,
-      currentColorAtom,
-      attemptColorAtom,
-      deltaAtom,
-    },
-  ] = useState(reatomColors);
-  const [targetColor] = useAtom(targetAtom);
-  const [initialColor] = useAtom(initialAtom);
+  const [targetColor] = useAtom(targetColorAtom);
+  const [initialColor] = useAtom(initialColorAtom);
   const [currentColor] = useAtom(currentColorAtom);
   const [attemptColor] = useAtom(attemptColorAtom);
   const [delta] = useAtom(deltaAtom);
 
   const attemptAction = useAction(attempt);
-  const generateNewColorClickAction = useAction(generateNewColorClick);
 
   return (
-    <div className="App">
-      <div>Yogurt: {delta}</div>
-      <section>
-        from this:
-        <div className="square" style={{ background: initialColor }}></div>
-        and this:
+    <section className="app">
+      <form>
+        <div className="square" style={{ background: initialColor }}>
+          <span>from</span>
+        </div>
         <div
           className="square"
           onClick={attemptAction}
           style={{ background: currentColor }}
-        ></div>
-        get this:
-        <div className="square" style={{ background: targetColor }}></div>
-        Attempt:
-        <div className="square" style={{ background: attemptColor }}></div>
-      </section>
-      <button onClick={generateNewColorClickAction}>Generate color</button>
-    </div>
+        >
+          <span>with</span>
+        </div>
+        <div className="square" style={{ background: targetColor }}>
+          {delta === null && <span>to</span>}
+          <div className="attempt" style={{ background: attemptColor }} />
+        </div>
+      </form>
+      <Delta />
+    </section>
   );
 }
 

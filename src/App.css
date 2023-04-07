@@ -1,6 +1,52 @@
+.app {
+  position: relative;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2vmax;
+}
+
 .square {
-  width: 80vw;
-  height: 80vw;
+  width: 30vmax;
+  height: 30vmax;
   border: 1px #ddd solid;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.square span {
+  font-family: monospace;
+  font-size: 300%;
+  font-weight: bolder;
+  opacity: 0.5;
+}
+
+.attempt {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  transform: scale(1.5) rotate(45deg) translate(50%, 0);
+  border: 1px dashed rgba(0,0,0,0.5);
+}
+
+.delta {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 20vmin;
+  filter: grayscale(1);
+  opacity: 0.8;
 }
