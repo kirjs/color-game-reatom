@@ -4,16 +4,15 @@ import {
   action,
   atom,
   onConnect,
-  onUpdate,
   random,
   sleep,
   take,
-  withInit,
 } from "@reatom/framework";
 import { colord, extend } from "colord";
 import mixPlugin from "colord/plugins/mix";
 import labPlugin from "colord/plugins/lab";
 import a11yPlugin from "colord/plugins/a11y";
+import { withLocalStorage } from "@reatom/persist-web-storage";
 extend([labPlugin, mixPlugin, a11yPlugin]);
 
 function getHsl(h = random(0, 360)) {
@@ -38,12 +37,9 @@ function reatomColors() {
   const speedAtom = atom(2, "speedAtom");
 
   const maxScoreAtom = atom(
-    (ctx, state = 0) => Math.max(ctx.spy(speedAtom), state),
+    (ctx, state = 2) => Math.max(ctx.spy(speedAtom), state),
     "maxScoreAtom"
-  ).pipe(withInit(() => Number(localStorage.getItem("maxScore")) || 2));
-  onUpdate(maxScoreAtom, (ctx, value) =>
-    localStorage.setItem("maxScore", value.toString())
-  );
+  ).pipe(withLocalStorage("maxScoreAtom"));
 
   const attempt = action((ctx) => {
     if (ctx.get(deltaAtom) !== null) {
@@ -53,11 +49,11 @@ function reatomColors() {
 
     const currentColor = ctx.get(_currentColorAtom);
     const initialColor = ctx.get(initialColorAtom);
+    const targetColor = ctx.get(targetColorAtom);
     const attemptColor = attemptColorAtom(
       ctx,
       colord(initialColor).mix(currentColor).toRgbString()
     );
-    const targetColor = ctx.get(targetColorAtom);
 
     const delta = colord(attemptColor).delta(targetColor);
     deltaAtom(ctx, delta);
