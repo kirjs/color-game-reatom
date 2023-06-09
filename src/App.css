@@ -1,6 +1,86 @@
+body {
+  margin: 0;
+}
+
+.app {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2vmax;
+}
+
 .square {
-  width: 80vw;
-  height: 80vw;
-  border: 1px #ddd solid;
-  margin-bottom: 32px;
+  width: 30vmax;
+  height: 30vmax;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 50ms;
+  border-radius: 5%;
+  pointer-events: none;
+}
+
+.square span {
+  font-family: monospace;
+  font-size: 200%;
+  font-weight: bolder;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.square span.speed {
+  position: absolute;
+  top: 70%;
+  font-size: 200%;
+}
+
+.speed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.result {
+  position: relative;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@media (orientation: landscape) {
+  .square {
+    flex-direction: column;
+  }
+  .result {
+    width: 100%;
+    height: 50%;
+  }
+}
+
+.delta {
+  position: absolute;
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 3rem;
+  filter: grayscale(1);
+  background-color: #ddd;
+  pointer-events: none;
 }
